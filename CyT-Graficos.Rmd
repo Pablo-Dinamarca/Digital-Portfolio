@@ -1,0 +1,335 @@
+---
+title: "Proyecto de Ciencia y Tecnología"
+author: "Pablo Dinamarca"
+date: "3/12/2020"
+output:
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Proyecto CyT
+
+## Cargamos la base de datos
+
+```{r message=FALSE, warning=FALSE}
+library(readxl)
+library(tidyverse)
+library(hrbrthemes)
+setwd("C:/Users/user/Desktop/Universidad/Ciencias y Tecnologia/Proyecto de Ciencia y Tecnologia/Proyecto Final/Dataset")
+Data <- read_excel("Data.xlsx")
+```
+
+## Preparamos las variables
+
+```{r message=FALSE, warning=FALSE}
+Data$Genero <- as.factor(ifelse(Data$Femenino==1, "F", "M"))
+Data$Titulo <- as.factor(ifelse(Data$Grado==1, "G", 
+                                ifelse(Data$`Especialidad / Diplomado`==1,"E", 
+                                                           ifelse(Data$Maestría==1, "M", 
+                                                                  ifelse(Data$Doctorado==1, "D", "PD")))))
+
+
+# G = Grado
+# E = Especialidad/Diplomado
+# M = Master
+# D = Doctorado
+# PD = Post Doctorado
+
+Data <- Data %>% select(-c("Post-Doctorado", "Doctorado", "Maestría", 
+                   "Especialidad / Diplomado", "Grado", "Femenino", 
+                   "Masculino"))
+
+```
+
+## Exploración Inicial
+
+```{r message=FALSE, warning=FALSE}
+nrow(Data)
+ncol(Data)
+```
+
+Nuestro Dataset cuenta con 102 filas y 23 columnas.
+
+```{r message=FALSE, warning=FALSE}
+table(Data$Genero)
+data.frame(Promedio=mean(Data$Genero=="M")*100)
+```
+
+Notamos que existe una predominancia del genero masculino del 81,4%.
+
+```{r message=FALSE, warning=FALSE}
+table(Data$Titulo)
+mean(Data$Titulo=="D")*100
+```
+
+La predominancia del mayor nivel de estudios alcanzado es de la categoria de doctorados con un 79,4%.
+
+```{r}
+table(Data$Nivel)
+```
+
+Distribucion por nivel del Investigador
+
+```{r}
+table(Data$Categoría)
+```
+
+Distribucion por categoria del Investigador
+
+```{r}
+mean(Data$`Año de obtención del ultimo grado académico`)
+```
+
+Promedio desde la obtencion del ultimo grado académico
+
+```{r}
+mean(Data$`Años desde la Obtención del Ültimo grado académico`)
+```
+
+Promedio de años desde la obtencion del ultimo grado académico
+
+```{r}
+mean(Data$Edad)
+```
+
+Promedio de la edad de los investigadores
+
+```{r}
+table(Data$`Estudió en el extranjero?`, Data$Titulo, dnn = c("Extranjero", "Titulo"))
+```
+
+Distribucion de investigadores que estudiaron en el extranjero y su titulo obtenido
+
+```{r}
+mean(Data$`Estudió en el extranjero?`)*100
+```
+
+Porcentaje que estudio en el extranjero
+
+```{r}
+mean(Data$`Fue becado?`)*100
+```
+
+Porcentaje que fue becado
+
+```{r}
+mean(Data$`Estudió en el extranjero?` & Data$`Fue becado?`)*100
+```
+
+Porcentaje que estudio en el extranjero y fue becado
+
+```{r}
+table(Data$`Estudió en el extranjero?`, Data$`Fue becado?`, dnn = c("Extranjero", "Becado"))
+```
+
+Distribucion de investigadores que estudiaron en el extranjero y fueron becados
+
+```{r}
+mean(Data$`Trabaja en una Institución Pública?`)*100
+```
+
+Porcentaje que Trabaja en una Institución Pública
+
+```{r}
+mean(Data$`Se hace investigación en el lugar donde trabaja?`)*100
+```
+
+Porcentaje donde Se hace investigación en el lugar donde trabaja
+
+```{r}
+mean(Data$`Trabaja en una Institución Pública?` & Data$`Se hace investigación en el lugar donde trabaja?`)*100
+```
+
+Porcentaje que Trabaja en una Institución Pública y Se hace investigación en el lugar donde trabaja
+
+```{r}
+mean(Data$`Ejerce la docencia?`)*100
+```
+
+Porcentaje que Ejerce la docencia
+
+```{r}
+mean(Data$`En una institución pública?`)*100
+```
+
+Porcentaje que Ejerce la docencia en una institución pública
+
+```{r}
+mean(Data$`Participó en proyectos financiados por CONACYT`)*100
+```
+
+Porcentaje que Participó en proyectos financiados por CONACYT
+
+```{r}
+mean(Data$`Participó en proyectos financiados por organismos internacionales`)*100
+```
+
+Porcentaje que Participó en proyectos financiados por organismos internacionales
+
+## Indice-h vs Citas 
+
+```{r}
+Data %>% ggplot(aes(Citas,`Indice-h`, color=Genero)) + geom_point() + geom_smooth(method = lm) +
+  ggtitle("Distribucion del Indice-h y el numero de Citas por genero") + 
+  theme(plot.title = element_text(size=15))
+```
+ 
+En este grafico podemos observar la distribucion del Indice-h vs el numero de citas con sus respectivas tendencias clasificadas por sexo.
+
+Notamos una correlacion positiva y una pendiente mas elastica para los hombres. Esto quiere decir que ante mayor numero de citas, mayor es tambien el indice-h. 
+
+```{r}
+Data %>% ggplot(aes(Citas,`Indice-h`, color=Genero)) + geom_point() + geom_smooth() +
+  ggtitle("Distribucion del Indice-h y el numero de Citas por genero") + 
+  theme(plot.title = element_text(size=15))
+```
+
+Este grafico nos señala una tendencia mas precisa de los datos con el respectivo intervalo de confianza del 95%.
+
+```{r}
+Data %>% ggplot(aes(Citas,`Indice-h`, color=Nivel)) + geom_point(aes(shape=Genero), size=3)  +
+  ggtitle("Distribucion del Indice-h y el numero de Citas por nivel y genero") + 
+  theme(plot.title = element_text(size=15))
+```
+
+Con este grafico notamos la clasificacion por colores del nivel de los investigadores.
+
+Podemos notar que un investigador de nivel II tiene mayo numero de citas tanto como de indice-h. Ademas se diferencia en el grafico los sexos por formas.
+
+```{r}
+Data %>% ggplot(aes(Citas,`Indice-h`, color=Genero)) + geom_point(size=3) + facet_grid(~Nivel) +
+  ggtitle("Distribucion del Indice-h y el numero de Citas por nivel y genero") + 
+  theme(plot.title = element_text(size=15))
+```
+
+En el grafico, se hace mas evidente la distribucion de las variables por nivel de investigador.
+
+Notamos ue el nivel I cuenta con menos cantidad de citas e indice-h mientras que el nivel II es lo contrario.
+
+```{r}
+Data %>% ggplot(aes(`Indice-h`, fill=Nivel)) + geom_density(alpha=0.2)  +
+  ggtitle("Distribucion del Indice-h y el numero de Citas por nivel y genero") + 
+  theme(plot.title = element_text(size=15))
+```
+
+
+```{r}
+Data %>% ggplot(aes(`Indice-h`, fill=Titulo)) + geom_density(alpha=0.2)  +
+  ggtitle("Distribucion del Indice-h y el numero de Citas por nivel y genero") + 
+  theme(plot.title = element_text(size=15))
+```
+
+
+```{r}
+Data %>% ggplot(aes(`Indice-h`, fill=Nivel)) + geom_density(alpha=0.2)  +
+  facet_grid(Titulo~Genero)+
+  ggtitle("Distribucion del Indice-h y el numero de Citas por nivel y genero") + 
+  theme(plot.title = element_text(size=15))
+```
+
+
+
+## Indice-h vs Edad 
+
+```{r}
+Data %>% ggplot(aes(Edad,`Indice-h`, color=Genero)) + geom_point() + facet_wrap(~Nivel) + 
+  ggtitle("Distribución del Indice-h vs la Edad del Investigador") + 
+  theme(plot.title = element_text(size=15))
+```
+
+En el presente grafico tenemos la distribucion por edad vs el indice-h dividido por el nivel del investigador y clasificado por sexo.
+
+Notamos que para los candidatos a investigador, los valores se centran mas entre los 30 y 45 años de edad
+similar a los de nivel I. mientras que para los de nivel II, el rango esta entre los 40 y 55 años con un indice-h promedio superior.
+
+```{r}
+Data %>% ggplot(aes(Edad,`Indice-h`, color=Nivel)) + geom_point(aes(shape=Genero), size=3) + 
+  scale_x_continuous(breaks=seq(28, 100, 5)) +
+  ggtitle("Distribución del Indice-h vs la Edad del Investigador") + 
+  theme(plot.title = element_text(size=15))
+```
+
+Este grafico nos presenta el indice-h vs la edad clasificado por el nivel y genero del investigador.
+
+Notamos una predominancia de los investigadores entre los 28 y 48 años y un indice-h de maximo 15.
+
+## Indice-h vs Edad y Citas 
+
+```{r}
+Data %>% ggplot(aes(Edad,`Indice-h`, color=Nivel)) + 
+  geom_point(aes(size=Citas),alpha=1) + 
+  geom_text(aes(label=Citas), nudge_x = 1.5)+ 
+  scale_x_continuous(breaks=seq(28, 100, 5)) +
+  ggtitle("Distribucion del Indice-h vs Edad y numero de Citas") + 
+  theme(plot.title = element_text(size=15))
+```
+
+El presente grafico nos muestra la clasificacion de los investigadores por nivel y numero de citas. 
+
+## Estudios 
+
+```{r}
+Data %>% ggplot(aes(Titulo,`Indice-h`)) + 
+  geom_boxplot() +
+  ggtitle("Distribución del Indice-h vs la Edad del Investigador") + 
+  theme(plot.title = element_text(size=15))
+```
+
+
+```{r}
+Data %>% ggplot(aes(Nivel,`Indice-h`)) + 
+  geom_boxplot() +
+  ggtitle("Distribución del Indice-h vs la Edad del Investigador") + 
+  theme(plot.title = element_text(size=15))
+```
+
+
+```{r}
+Data %>% ggplot(aes(Nivel,`Indice-h`, color=Titulo)) + 
+  geom_boxplot() +
+  ggtitle("Distribución del Indice-h vs la Edad del Investigador") + 
+  theme(plot.title = element_text(size=15))
+```
+
+
+
+## Grado Universitario 
+
+```{r}
+Uni <- Data %>% select(`Universidad dónde obtuvo su último grado universitario`) %>% 
+  group_by(`Universidad dónde obtuvo su último grado universitario`) %>% summarise(n=n())
+
+Uni %>% filter(n>1) %>% ggplot(aes(n, `Universidad dónde obtuvo su último grado universitario`)) + 
+  geom_point() + scale_x_continuous(breaks = seq(0, 8)) +
+  ylab("") +
+  ggtitle("Universidad dónde obtuvo su último grado universitario") + 
+  theme(plot.title = element_text(size=15))
+```
+
+En el grafico podemos notar que algunos investigadores realizaron sus estudios en unviversidades similares.
+
+Se destaca la Universidad de Sevilla, España y la UNA
+
+## Afiliación 
+
+```{r}
+Afi <- Data %>% select(`Institución de afiliacion`) %>% 
+  group_by(`Institución de afiliacion`) %>% summarise(n=n())
+
+Afi %>% filter(n>1) %>% ggplot(aes(n, `Institución de afiliacion`)) + 
+  geom_point() + scale_x_continuous(breaks = seq(0, 11)) +
+  ylab("") +
+  ggtitle("Institución de afiliacion") + 
+  theme(plot.title = element_text(size=15))
+```
+
+En el grafico podemos notar que algunos investigadores estan afiliados a Instituciones similares.
+
+Se encuentra una principal predominancia de diferentes sectores de la UNA
+
+
+
